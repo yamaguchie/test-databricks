@@ -7,13 +7,14 @@ data = {'name': ['Alice', 'Bob', 'Charlie', 'David', 'Ella'],
 df = pd.DataFrame(data)
 sdf = ps.from_pandas(df)
 
-ps.sql("use catalog catalog_kadokura")
-ps.sql("use database default")
+# ps.sql("use catalog catalog_kadokura")
+# ps.sql("use database default")
 # sdf.to_table("catalog_kadokura.default.zzz",format="delta",mode="append")
-sdf.to_table("jjj",format="delta",mode="append")
+sdf.to_table("kkk",format="delta",mode="append")
 
-tmp = ps.read_table("jjj")
+# tmp = ps.read_table("jjj")
 
-tmp.to_table("z300")
+# tmp.to_table("z300")
+
 
 
