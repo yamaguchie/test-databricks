@@ -3,7 +3,7 @@ This module is used for demo purposes.
 Author: Ei Yamaguchi
 Date: 2023-06-20
 """
-from demo.utils.utils import Logger, Params, Pandas_Schema
+from utils.utils import Logger, Params, Pandas_Schema
 
 import pandas as pd
 import pandera as pa

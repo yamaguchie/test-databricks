@@ -4,7 +4,10 @@ Author: Ei Yamaguchi
 Date: 2023-12-23
 """
 import sys
-sys.path.append("..")
+sys.dont_write_bytecode = True
+
+import warnings
+warnings.simplefilter('ignore')
 
 import pytest
 import pandas as pd

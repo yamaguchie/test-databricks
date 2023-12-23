@@ -5,7 +5,10 @@ Date: 2023-12-23
 """
 
 import sys
-sys.path.append("..")
+sys.dont_write_bytecode = True
+
+import warnings
+warnings.simplefilter('ignore')
 
 from omegaconf import OmegaConf
 from utils.utils import Params, Pandas_Schema, Logger
