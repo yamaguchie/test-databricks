@@ -3,16 +3,18 @@ This module is used for demo purposes.
 Author: Ei Yamaguchi
 Date: 2023-06-20
 """
-from utils.utils import Logger, Params, Pandas_Schema
+import warnings
+from typing import Union
+from datetime import datetime, timezone, timedelta
 
 import pandas as pd
-import pandera as pa
 import pyspark.pandas as ps
-import warnings
 
-from typing import Union
+import pandera as pa
+
 from omegaconf import OmegaConf
-from datetime import datetime, timezone, timedelta
+
+from utils.utils import Logger, Params, Pandas_Schema
 
 def increase_date(current_day: str, split_day: int) -> int:
     """Increase date by split day
@@ -31,7 +33,7 @@ def increase_date(current_day: str, split_day: int) -> int:
     return increase_date
 
 
-def fetch_date(ten_id: str, day: str) -> ps.frame.DataFrame:
+def fetch_date(ten_id: str, day: str) -> ps.DataFrame:
     """Get the input data.
 
     Args:
@@ -43,7 +45,7 @@ def fetch_date(ten_id: str, day: str) -> ps.frame.DataFrame:
     """
 
     Logger().logger.info("fetch data", method="fetch_date")
-    df_input_list_pd = pd.DataFrame(
+    df_input_list_ps = ps.DataFrame(
         {
             "ten_id": [ten_id, "10002", "10003", "10004", "10005", "10006"],
             "day": [
@@ -57,8 +59,6 @@ def fetch_date(ten_id: str, day: str) -> ps.frame.DataFrame:
             "count": [10, 20, 30, 40, 50, 60],
         }
     )
-    df_input_list_ps = ps.from_pandas(df_input_list_pd)
-    # df_input_list_ps = pandas_to_pyspark(df_input_list_pd)
     return df_input_list_ps
 
 
@@ -79,9 +79,9 @@ def pandas_to_pyspark(pandas_data: pd.DataFrame) -> ps.frame.DataFrame:
 
 
 def validate_data(
-    data: Union[ps.frame.DataFrame, pd.DataFrame],
+    data: ps.DataFrame,
     schema: Pandas_Schema, debug=True
-) -> Union[ps.frame.DataFrame, pd.DataFrame]:
+) -> ps.DataFrame:
     """データをvalidate.
 
     Args:
@@ -93,17 +93,10 @@ def validate_data(
     """
     Logger().logger.info("validate data")
     try:
-        if type(data) == ps.frame.DataFrame:
-            data = schema.validate(
-                data.to_pandas(), lazy=debug, inplace=True
-            )  # 定義されたスキーマに対してデータを検証して
-            data = pandas_to_pyspark(data)
-        elif type(data) == pd.core.frame.DataFrame:
-            data = schema.validate(
-                data, lazy=debug, inplace=True
-            )  # 定義されたスキーマに対してデータを検証して
-        else:
-            raise TypeError("Data Type Error")
+        data = schema.validate(
+            data.to_pandas(), lazy=debug, inplace=True
+        )  # 定義されたスキーマに対してデータを検証して
+        data = pandas_to_pyspark(data)
     except pa.errors.SchemaErrors as SchemaErrors:
         Logger().logger.warning(
             "SchemaErrors: some data did not pass schema validation"
@@ -113,14 +106,10 @@ def validate_data(
         print(drop_index)
         data = drop_data(data, drop_index)
         Logger().logger.warning("dataset after deleting unverified data")
-        print(data)
     return data
 
 
-def drop_data(
-    data: Union[ps.frame.DataFrame, pd.DataFrame], 
-    drop_index: pd.DataFrame
-) -> pd.DataFrame:
+def drop_data(data: ps.DataFrame) -> ps.DataFrame:
     """検証に失敗したデータの削除.
 
     Args:
@@ -133,19 +122,6 @@ def drop_data(
 
     Logger().logger.info("drop data")
 
-    if type(data) == ps.frame.DataFrame:
-        # data_pd = data.to_pandas()
-        data_pd = data_pd.drop(
-            data_pd.index[sorted(drop_index["index"].tolist())]
-        )  # 検証されていないデータをデータセットから削除して
-        data = ps.from_pandas(data_pd)
-        # data = pandas_to_pyspark(data_pd)
-    elif type(data) == pd.core.frame.DataFrame:
-        data = data.drop(
-            data.index[sorted(drop_index["index"].tolist())]
-        )  # 検証されていないデータをデータセットから削除して
-    else:
-        raise Exception("Drop Data Error")
     return data
 
 
@@ -165,12 +141,10 @@ def main():
     current_day = datetime.now(timezone(timedelta(hours=9))).strftime("%Y%m%d")
     increase_day = str(increase_date(current_day, 1))
 
-    df_data = fetch_date(ten_id, increase_day)  # データ取得処理呼び出し
-    df_data = validate_data(df_data, Pandas_Schema)  # データをcheck処理呼び出し
+    # df_data = fetch_date(ten_id, increase_day)  # データ取得処理呼び出し
+    # df_data = validate_data(df_data, Pandas_Schema)  # データをcheck処理呼び出し
 
     return
 
-
 if __name__ == "__main__":
     main()
-
