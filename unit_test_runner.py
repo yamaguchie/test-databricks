@@ -29,6 +29,7 @@ pytest_discovery_args = [
     "-s",
     "--pyargs",
     "-p no:warnings ",
+    "-p no:cacheprovider",
     test_path,
 ]
 pytest_pre_args.extend(pytest_discovery_args)

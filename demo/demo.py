@@ -14,10 +14,6 @@ from typing import Union
 from omegaconf import OmegaConf
 from datetime import datetime, timezone, timedelta
 
-
-warnings.filterwarnings("ignore")
-
-
 def increase_date(current_day: str, split_day: int) -> int:
     """Increase date by split day
 
@@ -45,6 +41,7 @@ def fetch_date(ten_id: str, day: str) -> ps.frame.DataFrame:
     Returns:
         Input data of type pyspark.
     """
+
     Logger().logger.info("fetch data", method="fetch_date")
     df_input_list_pd = pd.DataFrame(
         {
@@ -60,7 +57,8 @@ def fetch_date(ten_id: str, day: str) -> ps.frame.DataFrame:
             "count": [10, 20, 30, 40, 50, 60],
         }
     )
-    df_input_list_ps = pandas_to_pyspark(df_input_list_pd)
+    df_input_list_ps = ps.from_pandas(df_input_list_pd)
+    # df_input_list_ps = pandas_to_pyspark(df_input_list_pd)
     return df_input_list_ps
 
 
@@ -120,7 +118,8 @@ def validate_data(
 
 
 def drop_data(
-    data: Union[ps.frame.DataFrame, pd.DataFrame], drop_index: pd.DataFrame
+    data: Union[ps.frame.DataFrame, pd.DataFrame], 
+    drop_index: pd.DataFrame
 ) -> pd.DataFrame:
     """検証に失敗したデータの削除.
 
@@ -131,13 +130,16 @@ def drop_data(
     Returns:
         Data (Deleted unverified).
     """
+
     Logger().logger.info("drop data")
+
     if type(data) == ps.frame.DataFrame:
-        data_pd = data.to_pandas()
+        # data_pd = data.to_pandas()
         data_pd = data_pd.drop(
             data_pd.index[sorted(drop_index["index"].tolist())]
         )  # 検証されていないデータをデータセットから削除して
-        data = pandas_to_pyspark(data_pd)
+        data = ps.from_pandas(data_pd)
+        # data = pandas_to_pyspark(data_pd)
     elif type(data) == pd.core.frame.DataFrame:
         data = data.drop(
             data.index[sorted(drop_index["index"].tolist())]
@@ -154,18 +156,16 @@ def main():
     ・UDF呼び出し、データ統合
     ・データ保存
     """
+
     # パラメータの取得
     params = OmegaConf.structured(Params)
     ten_id = params.ten_id
-    
-    
 
     # 日付変数設定
     current_day = datetime.now(timezone(timedelta(hours=9))).strftime("%Y%m%d")
     increase_day = str(increase_date(current_day, 1))
 
     df_data = fetch_date(ten_id, increase_day)  # データ取得処理呼び出し
-
     df_data = validate_data(df_data, Pandas_Schema)  # データをcheck処理呼び出し
 
     return
