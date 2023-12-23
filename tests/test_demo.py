@@ -19,7 +19,7 @@ from pyspark.sql.types import StructType, StructField, StringType, LongType
 import pandera as pa
 from pandera.typing import Series
 
-from demo.demo import increase_date, fetch_date, pandas_to_pyspark, validate_data
+from demo.demo import increase_date, fetch_date, validate_data
 
 sys.dont_write_bytecode = True
 warnings.simplefilter('ignore')
@@ -102,14 +102,6 @@ def test_fetch_data():
     # transformed_df = transformed_df.to_spark()
 
     assertDataFrameEqual(transformed_df, expected_df)
-
-
-def test_pandas_to_pyspark():
-    d = {"col1": [1, 2], "col2": [3, 4]}
-    df = pd.DataFrame(data=d)
-    psd = pandas_to_pyspark(df)
-
-    assert ps.frame.DataFrame == type(psd)
 
 
 # def test_validate_data():

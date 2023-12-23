@@ -61,26 +61,10 @@ def fetch_date(ten_id: str, day: str) -> ps.DataFrame:
     )
     return df_input_list_ps
 
-
-def pandas_to_pyspark(pandas_data: pd.DataFrame) -> ps.frame.DataFrame:
-    """pandasをpysparkに変換.
-
-    Args:
-        pandas_data: Pandas type data.
-
-    Returns:
-        pyspark type data after convert.
-    """
-    Logger().logger.info("pandas to pyspark")
-    values = pandas_data.values.tolist()
-    columns = pandas_data.columns.tolist()
-    pyspark_data = ps.DataFrame(values, columns=columns)
-    return pyspark_data
-
-
 def validate_data(
     data: ps.DataFrame,
-    schema: Pandas_Schema, debug=True
+    schema: Pandas_Schema, 
+    debug=True
 ) -> ps.DataFrame:
     """データをvalidate.
 
@@ -96,7 +80,6 @@ def validate_data(
         data = schema.validate(
             data.to_pandas(), lazy=debug, inplace=True
         )  # 定義されたスキーマに対してデータを検証して
-        data = pandas_to_pyspark(data)
     except pa.errors.SchemaErrors as SchemaErrors:
         Logger().logger.warning(
             "SchemaErrors: some data did not pass schema validation"
@@ -106,6 +89,7 @@ def validate_data(
         print(drop_index)
         data = drop_data(data, drop_index)
         Logger().logger.warning("dataset after deleting unverified data")
+
     return data
 
 
