@@ -13,7 +13,7 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 # from logger_cloudwatch_structlog import AWSCloudWatchLogs 
 
-
+import os
 class Logger:
     """Defining the log class using structlog.
 
